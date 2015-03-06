@@ -1,3 +1,19 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+
+### API breaking changes
+
+* None.
+
+### Enhancements
+
+* Improve performance of `-[RLMArray indexOfObjectWhere:]` and `-[RLMArray
+  indexOfObjectWithPredicate:]`, and implement them for standalone RLMArrays.
+
+### Bugfixes
+
+* None.
+
 0.92.3 Release notes (2015-05-13)
 =============================================================
 
