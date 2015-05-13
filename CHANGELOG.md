@@ -10,6 +10,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 * Swift: Added `List.invalidated`, which returns if the given `List` is no longer
   safe to be accessed, and is analogous to `-[RLMArray isInvalidated]`.
+* Swift: Made `Object.init()` a required initializer.
 
 ### Bugfixes
 
