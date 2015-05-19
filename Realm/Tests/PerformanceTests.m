@@ -18,6 +18,8 @@
 
 #import "RLMTestCase.h"
 
+#if 0
+
 @interface NonRLMIntObject : NSObject
 @property (nonatomic) int intCol;
 @end
@@ -550,3 +552,5 @@ static RLMRealm *s_smallRealm, *s_mediumRealm, *s_largeRealm;
 }
 
 @end
+
+#endif

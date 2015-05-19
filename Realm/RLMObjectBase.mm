@@ -35,6 +35,8 @@
 - (instancetype)initWithRow:(realm::Row const&)row realm:(RLMRealm *)realm schema:(RLMObjectSchema *)objectSchema {
     self = [super init];
     if (self) {
+        NSAssert(row, @"row should be attached");
+        NSAssert(row.get_table(), @"row should be attached");
         _row = row;
         _realm = realm;
         _objectSchema = objectSchema;
