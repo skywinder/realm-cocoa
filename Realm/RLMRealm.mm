@@ -895,7 +895,8 @@ static void call_with_notifications(SharedGroup *sg, RLMSchema *schema, Func&& f
     for (RLMObjectSchema *objectSchema in schema.objectSchema) {
         for (__unsafe_unretained RLMObservable *observable : objectSchema->_observers) {
             auto const& row = observable->_row;
-            assert(row.is_attached());
+            if (!row.is_attached()) // FIXME: should maybe try to remove from array on invalidate
+                continue;
             for (size_t i = 0; i < objectSchema.properties.count; ++i) {
                 observers.push_back({
                     row.get_table()->get_index_in_group(),

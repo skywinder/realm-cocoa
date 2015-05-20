@@ -729,7 +729,6 @@ public:
         [realm cancelWriteTransaction];
     }
 
-#if 0
     {
         KVOLinkObject2 *obj = [self createLinkObject];
         KVORecorder r(self, obj, @"obj.obj.boolCol");
@@ -753,7 +752,6 @@ public:
         AssertChanged(r, 0U, @NO, @YES);
         [realm cancelWriteTransaction];
     }
-#endif
 }
 
 @end
