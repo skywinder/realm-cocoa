@@ -34,7 +34,8 @@
 @implementation RLMArrayLinkView {
     realm::LinkViewRef _backingLinkView;
     RLMRealm *_realm;
-    RLMObjectSchema *_objectSchema;
+    __unsafe_unretained RLMObjectSchema *_objectSchema;
+    RLMObservable *_observable;
 }
 
 + (RLMArrayLinkView *)arrayWithObjectClassName:(NSString *)objectClassName
@@ -42,7 +43,7 @@
                                          realm:(RLMRealm *)realm
                                   parentObject:(RLMObjectBase *)object
                                            key:(NSString *)key {
-    RLMArrayLinkView *ar = [[RLMArrayLinkView alloc] initWithObjectClassName:objectClassName parentObject:object key:key];
+    RLMArrayLinkView *ar = [[RLMArrayLinkView alloc] initWithObjectClassName:objectClassName parentObject:nil key:key];
     ar->_backingLinkView = view;
     ar->_realm = realm;
     ar->_objectSchema = ar->_realm.schema[objectClassName];
@@ -77,39 +78,54 @@ static inline void RLMValidateObjectClass(__unsafe_unretained RLMObjectBase *con
     }
 }
 
-static void changeArray(__unsafe_unretained RLMArrayLinkView *const ar, NSKeyValueChange kind, NSUInteger index, dispatch_block_t f) {
-    if (ar->_parentObject->_objectSchema->_observers.empty()) {
-        f();
-        return;
+static RLMObservable *getObservable(__unsafe_unretained RLMArrayLinkView *const ar) {
+    if (ar->_observable) {
+        return ar->_observable;
     }
 
-    NSIndexSet *is = [NSIndexSet indexSetWithIndex:index];
-    RLMWillChange(ar->_parentObject, ar->_key, kind, is);
-    f();
-    RLMDidChange(ar->_parentObject, ar->_key, kind, is);
+    for (__unsafe_unretained RLMObservable *o : ar->_objectSchema->_observers) {
+        if (o->_row.get_index() == ar->_backingLinkView->get_origin_row_index()) {
+            ar->_observable = o;
+            return o;
+        }
+    }
+
+    return nil;
+}
+
+static void changeArray(__unsafe_unretained RLMArrayLinkView *const ar, NSKeyValueChange kind, NSUInteger index, dispatch_block_t f) {
+    if (RLMObservable *o = getObservable(ar)) {
+        NSIndexSet *is = [NSIndexSet indexSetWithIndex:index];
+        [o willChange:kind valuesAtIndexes:is forKey:ar->_key];
+        f();
+        [o didChange:kind valuesAtIndexes:is forKey:ar->_key];
+    }
+    else {
+        f();
+    }
 }
 
 static void changeArray(__unsafe_unretained RLMArrayLinkView *const ar, NSKeyValueChange kind, NSRange range, dispatch_block_t f) {
-    if (ar->_parentObject->_objectSchema->_observers.empty()) {
+    if (RLMObservable *o = getObservable(ar)) {
+        NSIndexSet *is = [NSIndexSet indexSetWithIndexesInRange:range];
+        [o willChange:kind valuesAtIndexes:is forKey:ar->_key];
         f();
-        return;
+        [o didChange:kind valuesAtIndexes:is forKey:ar->_key];
     }
-
-    NSIndexSet *is = [NSIndexSet indexSetWithIndexesInRange:range];
-    RLMWillChange(ar->_parentObject, ar->_key, kind, is);
-    f();
-    RLMDidChange(ar->_parentObject, ar->_key, kind, is);
+    else {
+        f();
+    }
 }
 
 static void changeArray(__unsafe_unretained RLMArrayLinkView *const ar, NSKeyValueChange kind, NSIndexSet *is, dispatch_block_t f) {
-    if (ar->_parentObject->_objectSchema->_observers.empty()) {
+    if (RLMObservable *o = getObservable(ar)) {
+        [o willChange:kind valuesAtIndexes:is forKey:ar->_key];
         f();
-        return;
+        [o didChange:kind valuesAtIndexes:is forKey:ar->_key];
     }
-
-    RLMWillChange(ar->_parentObject, ar->_key, kind, is);
-    f();
-    RLMDidChange(ar->_parentObject, ar->_key, kind, is);
+    else {
+        f();
+    }
 }
 
 //

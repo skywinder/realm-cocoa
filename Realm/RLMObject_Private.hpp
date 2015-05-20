@@ -44,7 +44,4 @@ void RLMOverrideStandaloneMethods(Class cls);
 void RLMWillChange(RLMObjectBase *obj, NSString *key);
 void RLMDidChange(RLMObjectBase *obj, NSString *key);
 
-void RLMWillChange(RLMObjectBase *obj, NSString *key, NSKeyValueChange kind, NSIndexSet *indices);
-void RLMDidChange(RLMObjectBase *obj, NSString *key, NSKeyValueChange kind, NSIndexSet *indices);
-
 void RLMTrackDeletions(RLMRealm *realm, dispatch_block_t block);

@@ -39,7 +39,6 @@ namespace realm {
   @protected
     NSString *_objectClassName;
   @public
-    RLMObjectBase *_parentObject;
     NSString *_key;
 }
 

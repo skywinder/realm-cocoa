@@ -325,14 +325,6 @@ void RLMDidChange(RLMObjectBase *obj, NSString *key) {
     [getObservable(obj) didChangeValueForKey:key];
 }
 
-void RLMWillChange(RLMObjectBase *obj, NSString *key, NSKeyValueChange kind, NSIndexSet *indices) {
-    [getObservable(obj) willChange:kind valuesAtIndexes:indices forKey:key];
-}
-
-void RLMDidChange(RLMObjectBase *obj, NSString *key, NSKeyValueChange kind, NSIndexSet *indices) {
-    [getObservable(obj) didChange:kind valuesAtIndexes:indices forKey:key];
-}
-
 @implementation RLMObservationInfo
 @end
 

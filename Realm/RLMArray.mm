@@ -30,15 +30,22 @@
 @implementation RLMArray {
     // array for standalone
     NSMutableArray *_backingArray;
+    __weak RLMObjectBase *_parentObject;
 }
 
 static void changeArray(__unsafe_unretained RLMArray *const ar, NSKeyValueChange kind, NSIndexSet *is, dispatch_block_t f) {
     if (!ar->_backingArray) {
         ar->_backingArray = [NSMutableArray new];
     }
-    [ar->_parentObject willChange:kind valuesAtIndexes:is forKey:ar->_key];
-    f();
-    [ar->_parentObject didChange:kind valuesAtIndexes:is forKey:ar->_key];
+
+    if (RLMObjectBase *parent = ar->_parentObject) {
+        [parent willChange:kind valuesAtIndexes:is forKey:ar->_key];
+        f();
+        [parent didChange:kind valuesAtIndexes:is forKey:ar->_key];
+    }
+    else {
+        f();
+    }
 }
 
 static void changeArray(__unsafe_unretained RLMArray *const ar, NSKeyValueChange kind, NSUInteger index, dispatch_block_t f) {
