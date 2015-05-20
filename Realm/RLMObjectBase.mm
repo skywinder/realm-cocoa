@@ -28,6 +28,12 @@
 #import "RLMSwiftSupport.h"
 #import "RLMUtil.hpp"
 
+@interface RLMObjectBase () {
+    @public
+    RLMObservable *_observable;
+}
+@end
+
 @implementation RLMObservable {
     RLMRealm *_realm;
     RLMObjectSchema *_objectSchema;
@@ -45,6 +51,9 @@
 }
 
 - (id)valueForKey:(NSString *)key {
+    if (_returnNil) {
+        return nil;
+    }
     if ([key isEqualToString:@"invalidated"]) {
         return @(!_row.is_attached());
     }
@@ -52,7 +61,17 @@
         return nil;
     }
 
-    return RLMDynamicGet(_realm, _row, _objectSchema[key]);
+    id value = RLMDynamicGet(_realm, _row, _objectSchema[key]);
+    // FIXME: probably also for RLMArrayLinkView
+    if (auto obj = RLMDynamicCast<RLMObjectBase>(value)) {
+        for (__unsafe_unretained RLMObservable *o : obj->_objectSchema->_observers) {
+            if (o->_row && o->_row.get_index() == obj->_row.get_index()) {
+                obj->_observable = o;
+                break;
+            }
+        }
+    }
+    return value;
 }
 
 - (void)dealloc {
@@ -69,11 +88,7 @@
 
 const NSUInteger RLMDescriptionMaxDepth = 5;
 
-@implementation RLMObjectBase {
-    @public
-    RLMObservable *_observable;
-}
-
+@implementation RLMObjectBase
 // standalone init
 - (instancetype)init {
     if (RLMSchema.sharedSchema) {
@@ -263,7 +278,7 @@ static RLMObservable *getObservable(RLMObjectBase *obj) {
     }
 
     for (__unsafe_unretained RLMObservable *o : obj->_objectSchema->_observers) {
-        if (o->_row.get_index() == obj->_row.get_index()) {
+        if (o->_row && o->_row.get_index() == obj->_row.get_index()) {
             obj->_observable = o;
             return o;
         }
@@ -435,8 +450,8 @@ BOOL RLMObjectBaseAreEqual(RLMObjectBase *o1, RLMObjectBase *o2) {
         return NO;
     }
     // if table and index are the same
-    return o1->_row.get_table() == o2->_row.get_table() &&
-    o1->_row.get_index() == o2->_row.get_index();
+    return o1->_row.get_table() == o2->_row.get_table()
+        && o1->_row.get_index() == o2->_row.get_index();
 }
 
 
@@ -551,7 +566,7 @@ void RLMTrackDeletions(__unsafe_unretained RLMRealm *const realm, dispatch_block
                 if (objectSchema.table->get_index_in_group() != row.table_ndx)
                     continue;
                 for (auto observer : objectSchema->_observers) {
-                    if (observer->_row.get_index() == row.row_ndx) {
+                    if (observer->_row && observer->_row.get_index() == row.row_ndx) {
                         changes.push_back({observer, @"invalidated"});
                         break;
                     }

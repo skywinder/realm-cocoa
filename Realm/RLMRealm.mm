@@ -691,6 +691,9 @@ public:
             if (o.row == realm::not_found) {
                 if (o.isLink) {
                     [o.observable willChangeValueForKey:o.key];
+                    o.observable->_returnNil = true;
+                    [o.observable didChangeValueForKey:o.key];
+                    o.observable->_returnNil = false;
                 }
                 [o.observable willChangeValueForKey:@"invalidated"];
             }
@@ -920,9 +923,6 @@ static void call_with_notifications(SharedGroup *sg, RLMSchema *schema, Func&& f
     for (auto const& o : observers) {
         if (o.row == realm::not_found) {
             [o.observable didChangeValueForKey:@"invalidated"];
-            if (o.isLink) {
-                [o.observable didChangeValueForKey:o.key];
-            }
         }
         if (!o.changed)
             continue;

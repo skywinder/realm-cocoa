@@ -24,6 +24,7 @@
 @interface RLMObservable : NSObject {
     @public
     realm::Row _row;
+    bool _returnNil;
 }
 @property (nonatomic) void *observationInfo;
 @end

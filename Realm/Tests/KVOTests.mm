@@ -700,6 +700,30 @@ public:
 }
 
 - (void)testAddToRealmWithLinkedStandaloneObjects {
+    {
+        KVOLinkObject2 *obj = [self createLinkObject];
+        KVORecorder r(self, obj.obj, @"obj.boolCol");
+
+        RLMRealm *realm = RLMRealm.defaultRealm;
+        [realm beginWriteTransaction];
+        [realm addObject:obj.obj];
+        obj.obj.obj.boolCol = YES;
+        AssertChanged(r, 0U, @NO, @YES);
+        [realm cancelWriteTransaction];
+    }
+    @autoreleasepool {
+        KVOLinkObject2 *obj = [self createLinkObject];
+        KVORecorder r(self, obj.obj, @"obj.boolCol");
+
+        RLMRealm *realm = RLMRealm.defaultRealm;
+        [realm beginWriteTransaction];
+        [realm addObject:obj.obj];
+        obj.obj.obj.boolCol = YES;
+        AssertChanged(r, 0U, @NO, @YES);
+        [realm cancelWriteTransaction];
+    }
+    return;
+
     __weak id objleak;
     @autoreleasepool {
         KVOLinkObject2 *obj = [self createLinkObject];

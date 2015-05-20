@@ -84,7 +84,7 @@ static RLMObservable *getObservable(__unsafe_unretained RLMArrayLinkView *const 
     }
 
     for (__unsafe_unretained RLMObservable *o : ar->_objectSchema->_observers) {
-        if (o->_row.get_index() == ar->_backingLinkView->get_origin_row_index()) {
+        if (o->_row && o->_row.get_index() == ar->_backingLinkView->get_origin_row_index()) {
             ar->_observable = o;
             return o;
         }
