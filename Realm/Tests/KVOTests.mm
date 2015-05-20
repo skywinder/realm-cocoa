@@ -700,8 +700,10 @@ public:
 }
 
 - (void)testAddToRealmWithLinkedStandaloneObjects {
+    __weak id objleak;
     @autoreleasepool {
         KVOLinkObject2 *obj = [self createLinkObject];
+        objleak = obj;
         KVORecorder r(self, obj, @"obj.obj.boolCol");
 
         RLMRealm *realm = RLMRealm.defaultRealm;
@@ -710,6 +712,9 @@ public:
         obj.obj.obj.boolCol = YES;
         AssertChanged(r, 0U, @NO, @YES);
         [realm cancelWriteTransaction];
+    }
+    @autoreleasepool {
+        XCTAssertNil(objleak);
     }
 
     {
